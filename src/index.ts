@@ -1,18 +1,28 @@
 import "./index.css";
 
-import "./chapter-01";
+import { Observable, from } from "rxjs";
+import { map, filter } from "rxjs/operators"
 
-import { add } from "./common/math";
+let numbers = [1, 5, 10];
+let source = Observable.create((observer: { next: (arg0: number) => void; complete: () => void; }) => {
+    let index = 0;
+    let produceValue = () => {
 
-export class C {
-  private x = 17;
-  getX = () => this.x;
-  setX = (newVal: number) => {
-    this.x = newVal;
-  };
-}
+        observer.next(numbers[index++]);
 
-export let x = new C();
-export let y = { ...{ some: "value" } };
+        if (index < numbers.length) {
+            setTimeout(produceValue, 250);
+        } else {
+            observer.complete();
+        }
+    }
 
-console.log(add(3, 4));
+    produceValue();
+}).pipe
+(map((n:number) => n * 2),filter((n:number) => n > 4));
+
+source.subscribe(
+  (value: any) => console.log(`value: ${value}`),
+  (e: any) => console.log(`error: ${e}`),
+  () => console.log("complete")
+);
